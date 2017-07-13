@@ -1,0 +1,20 @@
+{% extends 'unoconsole/base.html' %}
+
+{% block left_nav %}
+    {% include 'unoconsole/includes/left_nav.html' with home='active' %}
+{% endblock left_nav %}
+
+{% block content %}
+	<div class="wrapper wrapper-content animated fadeInRight">
+	    <div class="row">
+	        <div class="col-lg-12">
+	            <div class="text-center m-t-lg">
+	                <h1>Welcome to the Console</h1>
+	                <small>
+	                    Here you can manage the content on the website.
+	                </small>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+{% endblock content %}

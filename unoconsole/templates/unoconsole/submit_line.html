@@ -1,0 +1,22 @@
+{% load i18n unoconsole_urls %}
+<div class="form-group">
+    <div class="col-sm-12 col-sm-offset-2">                    
+		{% if show_save %}
+		    {% if has_state %}
+			    <input type="submit" value="{% trans 'Save & Publish' %}" class="default btn btn-primary" name="_publish" {{ onclick_attrib }}/>
+			    <input type="submit" value="{% trans 'Save & Stage' %}" class="default btn btn-warning" name="_stage" {{ onclick_attrib }}/>
+			    <input type="submit" value="{% trans 'Save & Unpublish' %}" class="default btn btn-default" name="_unpublish" {{ onclick_attrib }}/>
+		     {% else %}
+		        <input type="submit" value="{% trans 'Save' %}" class="default btn btn-primary" name="_continue" {{ onclick_attrib }}/>
+		     {% endif %}
+		{% endif %}
+		{% if show_delete_link %}<a href="{% url opts|unoconsole_urlname:'delete' original.pk|unoconsole_urlquote %}" class="deletelink btn btn-danger">{% trans "Delete" %}</a>{% endif %}
+{% comment %}
+		{% if not copy_new_version %}
+			{% if show_save_as_new %}<input type="submit" value="{% trans 'Save as new' %}" name="_saveasnew" {{ onclick_attrib }}/>{%endif%}
+			{% if show_save_and_add_another %}<input type="submit" value="{% trans 'Save and add another' %}" name="_addanother" class="btn btn-primary" {{ onclick_attrib }}/>{% endif %}
+			{% if show_save_and_continue %}<input type="submit" value="{% trans 'Save and continue editing' %}" name="_continue" class="btn btn-primary" {{ onclick_attrib }}/>{% endif %}
+        {% endif %}
+{% endcomment %}
+    </div>
+</div>

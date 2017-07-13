@@ -1,0 +1,26 @@
+{% load i18n %}
+
+{% if action_list %}
+    <table id="change-history" class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">{% trans 'Date/time' %}</th>
+            <th scope="col">{% trans 'User / Action' %}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for action in action_list %}
+        <tr>
+            <th scope="row">{{ action.action_time|date:"DATETIME_FORMAT" }}</th>
+            <td>
+                <button type="button" class="btn btn-primary" data-container="body" data-toggle="popover" data-placement="top" data-content="{{ action.change_message }}" data-original-title="" title="" aria-describedby="popover126369">
+                    {% if action.user.display_name %}{{ action.user.display_name }}{% else %}{{ action.user.get_username }}{% endif %}
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>{% trans "This object doesn't have history yet." %}</p>
+{% endif %}

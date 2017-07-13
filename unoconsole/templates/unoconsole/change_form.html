@@ -1,0 +1,536 @@
+{% extends 'unoconsole/change_base.html' %}
+{% load i18n admin_static unoconsole_modify unoconsole_tags %}
+{% load unoconsole_urls %}
+
+{% block breadcrumbs %}
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>{{ title }}</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="{% url 'unoconsole_home' %}">Home</a>
+                </li>
+                <li>
+                    {% if has_change_permission %}<a href="{% url opts|unoconsole_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+                </li>
+                <li class="active">
+                    <strong>{% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-2">
+    
+        </div>
+    </div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+	<div class="wrapper wrapper-content animated fadeInRight">
+	    <div class="row">
+	        <div class="col-lg-8">
+	            <div class="ibox float-e-margins">
+	                <div class="ibox-title">
+	                    <h5>{% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}</h5>
+	                    <div class="ibox-tools">
+	                        {% if not add %}
+		                        {% if published_versions or staged_versions or unpublished_versions %}
+{% comment %}
+		                            {% if new_version_url %}
+			                            <a href="{{ new_version_url }}" title="New Version">
+		                                    <i class="fa fa-file-o"></i>
+		                                </a>
+		                            {% endif %}
+{% endcomment %}
+		                            {% if copy_version_url %}
+				                        <a href="{{ copy_version_url }}" title="Copy Version">
+			                                <i class="fa fa-copy"></i>
+			                            </a>
+			                        {% endif %}
+			                        {% if duplicate_version_url %}
+			                            <a href="{{ duplicate_version_url }}" title="Duplicate Version">
+	                                        <i class="fa fa-clipboard"></i>
+	                                    </a>
+	                                {% endif %}
+{% comment %}
+		                            <a href="" title="Preview">
+	                                    <i class="fa fa-file-text-o"></i>
+	                                </a>
+{% endcomment %}
+	                           {% endif %}
+	                        {% endif %}
+	                    </div>
+	                </div>
+	                <div class="ibox-content">
+	                    <div class="row">
+		                    <div class="col-lg-12">
+			                    <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form" class="form-horizontal">{% csrf_token %}{% block form_top %}{% endblock %}
+								{% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+								{% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
+								{% if errors %}
+								    <p class="errornote">
+								    {% blocktrans count counter=errors|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+								    </p>
+								    {{ adminform.form.non_field_errors }}
+								{% endif %}
+								
+								{% block field_sets %}
+								{% for fieldset in adminform %}
+								  {% include "unoconsole/includes/fieldset.html" %}
+								{% endfor %}
+								{% endblock %}
+								
+								{% block after_field_sets %}{% endblock %}
+								
+								{% block inline_field_sets %}
+								{% for inline_admin_formset in inline_admin_formsets %}
+								    {% include inline_admin_formset.opts.template %}
+								{% endfor %}
+								{% endblock %}
+								
+								{% block after_related_objects %}{% endblock %}
+								
+								{% block submit_buttons_bottom %}{% submit_row %}{% endblock %}
+								
+								{% if adminform.first_field and add %}
+								   <script type="text/javascript">document.getElementById("{{ adminform.first_field.id_for_label }}").focus();</script>
+								{% endif %}
+								
+								</form>
+	                        </div>
+{% comment %}	                        
+	                        <div class="col-lg-4">
+	                           <h4>Versions</h4>
+	                           {% for version in versions %}
+	                               <p><a href="{{ version.change_url }}">{{ version }} ({{ version.get_state_display }})</a></p>
+	                           {% empty %}
+	                               <p>There are no versions to list.</p>
+	                           {% endfor %}
+	                        </div>
+{% endcomment %}
+                        </div>
+	                </div>
+	            </div>
+	        </div>
+	        {% if not add and new_version_url and copy_version_url %}
+		        <div class="col-lg-4">
+		        {% if published_versions or staged_versions or unpublished_versions %}
+		            <div class="row">
+		                <div class="ibox float-e-margins">
+		                    <div class="ibox-title">
+		                        <h5>Status</h5>
+		                        <div class="ibox-tools">
+		                            <a class="collapse-link">
+		                                <i class="fa fa-chevron-up"></i>
+		                            </a>
+		                        </div>
+		                    </div>
+		                    <div class="ibox-content">
+		                        <p><i class="fa {% ifequal original.get_state_display 'Published' %}fa-check-square-o{% else %}fa-square-o{% endifequal %}"></i>&nbsp;&nbsp;Status: <strong>{{ original.get_state_display }}</strong></p>
+	                            <p><i class="fa fa-calendar"></i>&nbsp;&nbsp;{{ original.get_state_display }} on: <strong>{{ original.publish_at }}</strong></p>
+	                            {% if not original.get_state_display == 'Published' %}<a href="{{ publish_url }}{% comment %}?next={{ next_url }}{% endcomment %}" class="btn btn-primary">Publish</a>{% endif %}{% if not original.get_state_display == 'Staged' %}&nbsp;&nbsp;<a href="{{ stage_url }}{% comment %}?next={{ next_url }}{% endcomment %}" class="btn btn-warning">Stage</a>{% endif %}{% if not original.get_state_display == 'Unpublished' %}&nbsp;&nbsp;<a href="{{ unpublish_url }}{% comment %}?next={{ next_url }}{% endcomment %}" class="btn btn-default">Unpublish</a>{% endif %}
+		                    </div>
+		                </div>
+		            </div>
+		            <div class="row">
+	                    <div class="ibox float-e-margins">
+	                        <div class="ibox-title">
+	                            <h5>Versions</h5>
+	                            <div class="ibox-tools">
+	                                <a class="collapse-link">
+	                                    <i class="fa fa-chevron-up"></i>
+	                                </a>
+	                            </div>
+	                        </div>
+	                        <div class="ibox-content">
+	                                <div class="panel-group" id="accordion">
+	                                    <div class="panel panel-default">
+	                                        <div class="panel-heading">
+	                                            <h5 class="panel-title">
+	                                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" class="">Published</a>
+	                                            </h5>
+	                                        </div>
+	                                        <div id="collapseOne" {% if original.get_state_display == 'Published' %}class="panel-collapse collapse in" aria-expanded="true"{% else %}class="panel-collapse collapse" aria-expanded="false" style="height: 0px;"{% endif %}>
+	                                            <div class="panel-body">
+	                                               {% for version in published_versions %}
+					                                   <p><a href="{{ version.change_url }}">VER{{ version.number }} - {{ version.content_object.publish_at|date:"j F, Y" }}</a></p>
+					                               {% empty %}
+					                                   <p>There are no versions to list.</p>
+					                               {% endfor %}
+	                                            </div>
+	                                        </div>
+	                                    </div>
+	                                    <div class="panel panel-default">
+	                                        <div class="panel-heading">
+	                                            <h4 class="panel-title">
+	                                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" class="collapsed" aria-expanded="false">Staged</a>
+	                                            </h4>
+	                                        </div>
+	                                        <div id="collapseTwo" {% if original.get_state_display == 'Staged' %}class="panel-collapse collapse in" aria-expanded="true"{% else %}class="panel-collapse collapse" aria-expanded="false" style="height: 0px;"{% endif %}>
+	                                            <div class="panel-body">
+	                                                {% for version in staged_versions %}
+	                                                   <p><a href="{{ version.change_url }}">VER{{ version.number }} - {{ version.content_object.publish_at|date:"j F, Y" }}</a></p>
+	                                               {% empty %}
+	                                                   <p>There are no versions to list.</p>
+	                                               {% endfor %}
+	                                            </div>
+	                                        </div>
+	                                    </div>
+	                                    <div class="panel panel-default">
+	                                        <div class="panel-heading">
+	                                            <h4 class="panel-title">
+	                                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree" class="collapsed" aria-expanded="false">Unpublished</a>
+	                                            </h4>
+	                                        </div>
+	                                        <div id="collapseThree" {% if original.get_state_display == 'Unpublished' %}class="panel-collapse collapse in" aria-expanded="true"{% else %}class="panel-collapse collapse" aria-expanded="false" style="height: 0px;"{% endif %}>
+	                                            <div class="panel-body">
+	                                                {% for version in unpublished_versions %}
+	                                                   <p><a href="{{ version.change_url }}">VER{{ version.number }} - {{ version.content_object.publish_at|date:"j F, Y" }}</a></p>
+	                                               {% empty %}
+	                                                   <p>There are no versions to list.</p>
+	                                               {% endfor %}
+	                                            </div>
+	                                        </div>
+	                                    </div>
+	                                </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                {% endif %}
+	                <div class="row">
+	                    <div class="ibox float-e-margins">
+	                        <div class="ibox-title">
+	                            <h5>Recent History</h5>
+	                            <div class="ibox-tools">
+	                                <a class="collapse-link">
+	                                    <i class="fa fa-chevron-up"></i>
+	                                </a>
+	                            </div>
+	                        </div>
+	                        <div class="ibox-content">
+	                            <div class="row">
+	                                <div class="col-lg-12">
+	                                    {% object_history %}
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+                </div>
+            {% endif %}
+	    </div>
+	</div>
+{% endblock content %}
+
+{% block bottom_js %}
+<script>
+    function setupDateTime(){
+    	$('.vDateField').each(function(index, date_field){
+            if($(date_field).attr('name').indexOf('__prefix__') == -1){
+                $(date_field).datetimepicker({
+                    weekStart: 1,
+                    todayBtn:  1,
+                    autoclose: 1,
+                    todayHighlight: 1,
+                    startView: 2,
+                    minView: 2,
+                    forceParse: 0,
+                    format: "yyyy-mm-dd"
+                });
+            }
+        });
+        $('.vTimeField').each(function(index, date_field){
+            if($(date_field).attr('name').indexOf('__prefix__') == -1){
+                $(date_field).datetimepicker({
+                    weekStart: 1,
+                    todayBtn:  1,
+                    autoclose: 1,
+                    todayHighlight: 1,
+                    startView: 1,
+                    minView: 0,
+                    maxView: 1,
+                    forceParse: 0,
+                    format: "hh:ii:ss"
+                }); 
+            }
+        });	
+    }
+    $('textarea.redactor').redactor({
+        imageUpload: "{% url 'redactor_images_upload' %}",
+        imageManagerJson: "{% url 'redactor_images' %}",
+        fileUpload: "{% url 'redactor_files_upload' %}",
+        fileManagerJson: "{% url 'redactor_files' %}",
+        plugins: ['fullscreen', 'video', 'imagemanager', 'filemanager'],
+        replaceDivs: false,
+        removeWithoutAttr: false
+    });
+	$('.note-insert').remove();
+	$('.chosen-select').chosen();
+	setupDateTime();
+</script>
+<script type="text/javascript">
+(function($) {
+	  $.fn.formset = function(opts) {
+	    var options = $.extend({}, $.fn.formset.defaults, opts);
+	    var $this = $(this);
+	    var $parent = $this.parent();
+	    var updateElementIndex = function(el, prefix, ndx) {
+	      var id_regex = new RegExp("(" + prefix + "-(\\d+|__prefix__))");
+	      var replacement = prefix + "-" + ndx;
+	      if ($(el).attr("for")) {
+	        $(el).attr("for", $(el).attr("for").replace(id_regex, replacement));
+	      }
+	      if (el.id) {
+	        el.id = el.id.replace(id_regex, replacement);
+	      }
+	      if (el.name) {
+	        el.name = el.name.replace(id_regex, replacement);
+	      }
+	    };
+	    var totalForms = $("#id_" + options.prefix + "-TOTAL_FORMS").attr("autocomplete", "off");
+	    var nextIndex = parseInt(totalForms.val(), 10);
+	    var maxForms = $("#id_" + options.prefix + "-MAX_NUM_FORMS").attr("autocomplete", "off");
+	    // only show the add button if we are allowed to add more items,
+	        // note that max_num = None translates to a blank string.
+	    var showAddButton = maxForms.val() === '' || (maxForms.val()-totalForms.val()) > 0;
+	    $this.each(function(i) {
+	      $(this).not("." + options.emptyCssClass).addClass(options.formCssClass);
+	    });
+	    if ($this.length && showAddButton) {
+	      var addButton;
+	      if ($this.attr("tagName") == "TR") {
+	        // If forms are laid out as table rows, insert the
+	        // "add" button in a new table row:
+	        var numCols = this.eq(-1).children().length;
+	        $parent.append('<tr class="' + options.addCssClass + '"><td colspan="' + numCols + '"><a href="javascript:void(0)">' + options.addText + "</a></tr>");
+	        addButton = $parent.find("tr:last a");
+	      } else {
+	        // Otherwise, insert it immediately after the last form:
+	        $this.filter(":last").after('<div class="' + options.addCssClass + '"><a href="javascript:void(0)">' + options.addText + "</a></div>");
+	        addButton = $this.filter(":last").next().find("a");
+	      }
+	      addButton.click(function(e) {
+	        e.preventDefault();
+	        var totalForms = $("#id_" + options.prefix + "-TOTAL_FORMS");
+	        var template = $("#" + options.prefix + "-empty");
+	        var row = template.clone(true);
+	        row.removeClass(options.emptyCssClass)
+	          .addClass(options.formCssClass)
+	          .attr("id", options.prefix + "-" + nextIndex);
+	        if (row.is("tr")) {
+	          // If the forms are laid out in table rows, insert
+	          // the remove button into the last table cell:
+	          row.children(":last").append('<div><a class="' + options.deleteCssClass +'" href="javascript:void(0)">' + options.deleteText + "</a></div>");
+	        } else if (row.is("ul") || row.is("ol")) {
+	          // If they're laid out as an ordered/unordered list,
+	          // insert an <li> after the last list item:
+	          row.append('<li><a class="' + options.deleteCssClass +'" href="javascript:void(0)">' + options.deleteText + "</a></li>");
+	        } else {
+	          // Otherwise, just insert the remove button as the
+	          // last child element of the form's container:
+	          row.children(":first").append('<span><a class="' + options.deleteCssClass + '" href="javascript:void(0)">' + options.deleteText + "</a></span>");
+	        }
+	        row.find("*").each(function() {
+	          updateElementIndex(this, options.prefix, totalForms.val());
+	        });
+	        // Insert the new form when it has been fully edited
+	        row.insertBefore($(template));
+	        // Update number of total forms
+	        $(totalForms).val(parseInt(totalForms.val(), 10) + 1);
+	        nextIndex += 1;
+	        // Hide add button in case we've hit the max, except we want to add infinitely
+	        if ((maxForms.val() !== '') && (maxForms.val()-totalForms.val()) <= 0) {
+	          addButton.parent().hide();
+	        }
+	        // The delete button of each row triggers a bunch of other things
+	        row.find("a." + options.deleteCssClass).click(function(e) {
+	          e.preventDefault();
+	          // Remove the parent form containing this button:
+	          var row = $(this).parents("." + options.formCssClass);
+	          row.remove();
+	          nextIndex -= 1;
+	          // If a post-delete callback was provided, call it with the deleted form:
+	          if (options.removed) {
+	            options.removed(row);
+	          }
+	          // Update the TOTAL_FORMS form count.
+	          var forms = $("." + options.formCssClass);
+	          $("#id_" + options.prefix + "-TOTAL_FORMS").val(forms.length);
+	          // Show add button again once we drop below max
+	          if ((maxForms.val() === '') || (maxForms.val()-forms.length) > 0) {
+	            addButton.parent().show();
+	          }
+	          // Also, update names and ids for all remaining form controls
+	          // so they remain in sequence:
+	          for (var i=0, formCount=forms.length; i<formCount; i++)
+	          {
+	            updateElementIndex($(forms).get(i), options.prefix, i);
+	            $(forms.get(i)).find("*").each(function() {
+	              updateElementIndex(this, options.prefix, i);
+	            });
+	          }
+	        });
+	        // If a post-add callback was supplied, call it with the added form:
+	        if (options.added) {
+	          options.added(row);
+	        }
+	      });
+	    }
+	    return this;
+	  };
+
+	  /* Setup plugin defaults */
+	  $.fn.formset.defaults = {
+	    prefix: "form",          // The form prefix for your django formset
+	    addText: "add another",      // Text for the add link
+	    deleteText: "remove",      // Text for the delete link
+	    addCssClass: "add-row",      // CSS class applied to the add link
+	    deleteCssClass: "delete-row",  // CSS class applied to the delete link
+	    emptyCssClass: "empty-row",    // CSS class applied to the empty row
+	    formCssClass: "dynamic-form",  // CSS class applied to each form in a formset
+	    added: null,          // Function called each time a new form is added
+	    removed: null          // Function called each time a form is deleted
+	  };
+
+
+	  // Tabular inlines ---------------------------------------------------------
+	  $.fn.tabularFormset = function(options) {
+	    var $rows = $(this);
+	    var alternatingRows = function(row) {
+	      $($rows.selector).not(".add-row").removeClass("row1 row2")
+	        .filter(":even").addClass("row1").end()
+	        .filter(":odd").addClass("row2");
+	    };
+
+	    var reinitDateTimeShortCuts = function() {
+	      setupDateTime();
+	    };
+
+	    var updateSelectFilter = function() {
+	      // If any SelectFilter widgets are a part of the new form,
+	      // instantiate a new SelectFilter instance for it.
+	      if (typeof SelectFilter != 'undefined'){
+	        $('.selectfilter').each(function(index, value){
+	          var namearr = value.name.split('-');
+	          SelectFilter.init(value.id, namearr[namearr.length-1], false, options.adminStaticPrefix );
+	        });
+	        $('.selectfilterstacked').each(function(index, value){
+	          var namearr = value.name.split('-');
+	          SelectFilter.init(value.id, namearr[namearr.length-1], true, options.adminStaticPrefix );
+	        });
+	      }
+	    };
+
+	    var initPrepopulatedFields = function(row) {
+	      row.find('.prepopulated_field').each(function() {
+	        var field = $(this),
+	            input = field.find('input, select, textarea'),
+	            dependency_list = input.data('dependency_list') || [],
+	            dependencies = [];
+	        $.each(dependency_list, function(i, field_name) {
+	          dependencies.push('#' + row.find('.field-' + field_name).find('input, select, textarea').attr('id'));
+	        });
+	        if (dependencies.length) {
+	          input.prepopulate(dependencies, input.attr('maxlength'));
+	        }
+	      });
+	    };
+
+	    $rows.formset({
+	      prefix: options.prefix,
+	      addText: options.addText,
+	      formCssClass: "dynamic-" + options.prefix,
+	      deleteCssClass: "inline-deletelink",
+	      deleteText: options.deleteText,
+	      emptyCssClass: "empty-form",
+	      removed: alternatingRows,
+	      added: function(row) {
+	        initPrepopulatedFields(row);
+	        reinitDateTimeShortCuts();
+	        updateSelectFilter();
+	        alternatingRows(row);
+	      }
+	    });
+
+	    return $rows;
+	  };
+
+	  // Stacked inlines ---------------------------------------------------------
+	  $.fn.stackedFormset = function(options) {
+	    var $rows = $(this);
+	    var updateInlineLabel = function(row) {
+	      $($rows.selector).find(".inline_label").each(function(i) {
+	        var count = i + 1;
+	        $(this).html($(this).html().replace(/(#\d+)/g, "#" + count));
+	      });
+	    };
+
+	    var reinitDateTimeShortCuts = function() {
+	      // Reinitialize the calendar and clock widgets by force, yuck.
+	      if (typeof DateTimeShortcuts != "undefined") {
+	        $(".datetimeshortcuts").remove();
+	        DateTimeShortcuts.init();
+	      }
+	    };
+
+	    var updateSelectFilter = function() {
+	      // If any SelectFilter widgets were added, instantiate a new instance.
+	      if (typeof SelectFilter != "undefined"){
+	        $(".selectfilter").each(function(index, value){
+	          var namearr = value.name.split('-');
+	          SelectFilter.init(value.id, namearr[namearr.length-1], false, options.adminStaticPrefix);
+	        });
+	        $(".selectfilterstacked").each(function(index, value){
+	          var namearr = value.name.split('-');
+	          SelectFilter.init(value.id, namearr[namearr.length-1], true, options.adminStaticPrefix);
+	        });
+	      }
+	    };
+
+	    var initPrepopulatedFields = function(row) {
+	      row.find('.prepopulated_field').each(function() {
+	        var field = $(this),
+	            input = field.find('input, select, textarea'),
+	            dependency_list = input.data('dependency_list') || [],
+	            dependencies = [];
+	        $.each(dependency_list, function(i, field_name) {
+	          dependencies.push('#' + row.find('.form-row .field-' + field_name).find('input, select, textarea').attr('id'));
+	        });
+	        if (dependencies.length) {
+	          input.prepopulate(dependencies, input.attr('maxlength'));
+	        }
+	      });
+	    };
+
+	    $rows.formset({
+	      prefix: options.prefix,
+	      addText: options.addText,
+	      formCssClass: "dynamic-" + options.prefix,
+	      deleteCssClass: "inline-deletelink",
+	      deleteText: options.deleteText,
+	      emptyCssClass: "empty-form",
+	      removed: updateInlineLabel,
+	      added: (function(row) {
+	        initPrepopulatedFields(row);
+	        reinitDateTimeShortCuts();
+	        updateSelectFilter();
+	        updateInlineLabel(row);
+	      })
+	    });
+
+	    return $rows;
+	  };
+	})(jQuery);
+</script>
+{% for inline_admin_formset in inline_admin_formsets %}
+	<script type="text/javascript">
+	(function($) {
+	  $("#{{ inline_admin_formset.formset.prefix }}-group .inline-related").stackedFormset({
+	    prefix: "{{ inline_admin_formset.formset.prefix }}",
+	    adminStaticPrefix: '{% static "admin/" %}',
+	    addText: "Add another",
+	    deleteText: "{% trans 'Remove' %}"
+	  });
+	})(jQuery);
+	</script>
+{% endfor %}
+{% endblock bottom_js %}

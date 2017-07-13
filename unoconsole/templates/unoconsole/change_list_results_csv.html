@@ -1,0 +1,3 @@
+{% for header in result_headers %}"{{ header.text|capfirst }}"{% if not forloop.last %},{% endif %}{% endfor %}
+{% for result in results %}{% for item in result %}"{{ item }}"{% if not forloop.last %},{% endif %}{% endfor %}
+{% endfor %}

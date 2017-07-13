@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ PROJECT_NAME|title }} | Home</title>
+
+    <link href="{{ STATIC_URL }}unoconsole/css/bootstrap.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}unoconsole/font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <link href="{{ STATIC_URL }}unoconsole/css/animate.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}unoconsole/css/style.css" rel="stylesheet">
+
+    <link href="{{ STATIC_URL }}unoconsole/js/plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}redactor/css/redactor.css" rel="stylesheet" >
+    <link href="{{ STATIC_URL }}unoconsole/css/plugins/chosen/chosen.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ STATIC_URL }}cumulus/css/jstree.css" />
+    
+    
+</head>
+
+<body>
+
+<div id="wrapper">
+
+    {% block left_nav %}
+        {% include 'unoconsole/includes/left_nav.html' %}
+    {% endblock left_nav %}
+
+    <div id="page-wrapper" class="gray-bg">
+        {% block breadcrumbs %}{% endblock breadcrumbs %}
+        {% block messages %}
+            {% if messages %}
+                {% for message in messages %}
+                  <div class="row">
+                      <div class="alert alert-success">
+                          {{ message }}
+                      </div>
+                  </div>
+                {% endfor %}
+            {% endif %}
+        {% endblock messages %}
+        {% block content %}{% endblock content %}
+        <div class="footer">
+            <div>
+                <strong>Copyright</strong> {{ PROJECT_NAME|title }} &copy; {% now 'Y' %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Mainly scripts -->
+{% block jquery %}
+<script src="{{ STATIC_URL }}unoconsole/js/jquery-2.1.1.js"></script>
+{% endblock jquery %}
+<script src="{{ STATIC_URL }}unoconsole/js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}unoconsole/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="{{ STATIC_URL }}unoconsole/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="{{ STATIC_URL }}redactor/js/redactor.js"></script>
+<script src="{{ STATIC_URL }}redactor/js/fullscreen.js"></script>
+<script src="{{ STATIC_URL }}redactor/js/video.js"></script>
+<script src="{{ STATIC_URL }}redactor/js/imagemanager.js"></script>
+<script src="{{ STATIC_URL }}redactor/js/filemanager.js"></script>
+<script src="{{ STATIC_URL }}unoconsole/js/plugins/chosen/chosen.jquery.js"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{{ STATIC_URL }}unoconsole/js/inspinia.js"></script>
+<script src="{{ STATIC_URL }}unoconsole/js/plugins/pace/pace.min.js"></script>
+<script src="{{ STATIC_URL }}unoconsole/js/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+
+{% block bottom_js %}{% endblock bottom_js %}
+
+</body>
+
+</html>

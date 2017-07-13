@@ -1,0 +1,47 @@
+<fieldset class="module aligned {{ fieldset.classes }}">
+    {% if fieldset.name %}<h2>{{ fieldset.name }}</h2>{% endif %}
+    {% if fieldset.description %}
+        <div class="description">{{ fieldset.description|safe }}</div>
+    {% endif %}
+    {% for line in fieldset %}
+        <div class="form-group{% if line.fields|length_is:'1' and line.errors %} errors{% endif %}{% for field in line %}{% if field.field.name %} field-{{ field.field.name }}{% endif %}{% endfor %}">
+            {% for field in line %}
+	            {% if not line.fields|length_is:'1' and not field.is_readonly %}{{ field.errors }}{% endif %}
+	            {% if field.is_checkbox %}
+	                <div class="col-sm-4">
+		                <label class="checkbox-inline">
+	                        {{ field.field }}
+	                        {{ field.label_tag }}
+	                    </label>
+	                </div>
+	            {% else %}
+	                <div class="col-sm-2">
+	                	{{ field.label_tag }}
+	                	{% if field.field.help_text %}
+	                	    {% if not 'href' in field.field.help_text %}
+	                		    <span class="help" data-toggle="tooltip" data-placement="right" title="" data-original-title="{{ field.field.help_text|safe }}"><i class="fa fa-question-circle"></i></span>
+	            		    {% endif %}
+	            		{% endif %}
+	                </div>
+	                {% if field.is_readonly %}
+	                    <div class="col-sm-4">
+	                        <p>{{ field.contents|linebreaksbr }}</p>
+	                        {% if 'href' in field.field.help_text %}
+	                            <p class="col-sm-12 help text-center">{{ field.field.help_text|safe }}</p>
+	                            <br/>
+	                        {% endif %}
+	                    </div>
+	                {% else %}
+	                    <div class="col-sm-8">
+	                        {{ field.field }}{% if line.fields|length_is:'1' %}{{ line.errors }}{% endif %}
+	                        {% if 'href' in field.field.help_text %}
+	                            <br/>
+                                <p class="col-sm-12 help text-center">{{ field.field.help_text|safe }}</p>
+                            {% endif %}
+	                    </div>
+	                {% endif %}
+	            {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+</fieldset>

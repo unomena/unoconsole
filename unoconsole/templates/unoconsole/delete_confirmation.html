@@ -1,0 +1,76 @@
+{% extends 'unoconsole/change_base.html' %}
+{% load i18n admin_static unoconsole_modify %}
+{% load unoconsole_urls %}
+
+{% block breadcrumbs %}
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>{{ title }}</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="{% url 'unoconsole_home' %}">Home</a>
+                </li>
+                <li>
+                    {% if has_change_permission %}<a href="{% url opts|unoconsole_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+                </li>
+                <li>
+                    <a href="{% url opts|unoconsole_urlname:'change' object.pk|unoconsole_urlquote %}">{{ object|truncatewords:"18" }}</a>
+                </li>
+                <li class="active">
+                    <strong>{% trans 'Delete' %}</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-2">
+    
+        </div>
+    </div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>{% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        {% if perms_lacking or protected %}
+						    {% if perms_lacking %}
+						        <p>{% blocktrans with escaped_object=object %}Deleting the {{ object_name }} '{{ escaped_object }}' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:{% endblocktrans %}</p>
+						        <ul>
+						        {% for obj in perms_lacking %}
+						            <li>{{ obj }}</li>
+						        {% endfor %}
+						        </ul>
+						    {% endif %}
+						    {% if protected %}
+						        <p>{% blocktrans with escaped_object=object %}Deleting the {{ object_name }} '{{ escaped_object }}' would require deleting the following protected related objects:{% endblocktrans %}</p>
+						        <ul>
+						        {% for obj in protected %}
+						            <li>{{ obj }}</li>
+						        {% endfor %}
+						        </ul>
+						    {% endif %}
+						{% else %}
+						    <p>{% blocktrans with escaped_object=object %}Are you sure you want to delete the {{ object_name }} "{{ escaped_object }}"? All of the following related items will be deleted:{% endblocktrans %}</p>
+						    <ul>{{ deleted_objects|unordered_list }}</ul>
+						    <form action="" method="post">{% csrf_token %}
+						    <div>
+						    <input type="hidden" name="post" value="yes" />
+						    <input class="btn btn-primary" type="submit" value="{% trans "Yes, I'm sure" %}" />
+						    </div>
+						    </form>
+						{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
